@@ -65,13 +65,13 @@ func mergeTags(tags map[string]string, additionalTags interface{}) map[string]st
 		outputTags[name] = value
 	}
 
-	reflectedContext := reflect.TypeOf(&additionalTags).Elem()
-	reflectedValue := reflect.ValueOf(&additionalTags).Elem()
+	reflectedValue := reflect.ValueOf(additionalTags)
 	if reflectedValue.Kind() == reflect.Map {
 		for _, name := range reflectedValue.MapKeys() {
 			outputTags[name.String()] = reflectedValue.MapIndex(name).String()
 		}
 	} else if reflectedValue.Kind() == reflect.Struct {
+		reflectedContext := reflect.TypeOf(additionalTags)
 		for i := 0; i < reflectedContext.NumField(); i++ {
 			currentField := reflectedContext.Field(i)
 			outputTags[currentField.Name] = reflectedValue.FieldByName(currentField.Name).String()
