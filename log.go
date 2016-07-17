@@ -4,9 +4,9 @@ import (
 	"reflect"
 )
 
-const LOG_TIME_FORMAT = "2006-01-02T15:04:05.000000"
-const LOG_LEVEL_DEBUG = "DEBUG"
-const LOG_LEVEL_INFO  = "INFO"
+const TIME_FORMAT = "2006-01-02T15:04:05.000000"
+const LEVEL_DEBUG = "DEBUG"
+const LEVEL_INFO  = "INFO"
 
 type Config struct {
 	Level string
@@ -26,12 +26,12 @@ func (err LogFormattingFailed) String() string {
 }
 
 func (log Log) Info(message string, tags interface{}) {
-	log.config.Output(log.config.Formatter(LOG_LEVEL_INFO, message, mergeTags(log.config.Tags, tags)))
+	log.config.Output(log.config.Formatter(LEVEL_INFO, message, mergeTags(log.config.Tags, tags)))
 }
 
 func (log Log) Debug(message string, tags interface{}) {
-	if log.config.Level == LOG_LEVEL_DEBUG {
-		log.config.Output(log.config.Formatter(LOG_LEVEL_DEBUG, message, mergeTags(log.config.Tags, tags)))
+	if log.config.Level == LEVEL_DEBUG {
+		log.config.Output(log.config.Formatter(LEVEL_DEBUG, message, mergeTags(log.config.Tags, tags)))
 	}
 }
 
