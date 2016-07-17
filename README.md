@@ -1,27 +1,27 @@
 # log
 
-A minimal logging library for the go language, inspired by this blog post: 
+A minimal logging library for the go language, inspired by this blog post:
 http://dave.cheney.net/2015/11/05/lets-talk-about-logging
 
 ## Philosophy
 - there are informational messages that you want to see while the program is running in production
 - there are debug messages that you want to see while debugging
 
-Consequently there are just two log levels: INFO and DEBUG.
+Consequently there are just two log levels: INFO and DEBUG, which are used for output control only. 
 When thinking: "I need additional WARNING, ERROR and CRITICAL levels", consider this:
-Errors are supposed to be handled; or not. When handling the error, 
-the developer is expected to bring the program back into a working state without loosing any data.
-When not handling the error, the program should not do anything anymore, especially not have any side effects, and exit. 
+Errors are supposed to be handled... or not. 
+When handling the error, the developer is expected to bring the program back into a working state without loosing any data.
+When not handling the error, the program should not do anything anymore, especially not have side effects, and exit. 
 In either case the developer has to decide if she wants to see that the error happened while the program is running in production (INFO)
-or just while developing (DEBUG).
-For a more detailed explanation read Dave Cheney's post linked above. 
+or just during development (DEBUG).
+For a more detailed explanation, read Dave Cheney's post linked above. 
 
 ## Features
-- simplified and easy to reason about log levels
+- simplified log levels that are easy to reason about
 - pluggable output formatters (plain text and JSON are currently supported)
 - the plain text formatter outputs lines that can easily be processed with standard command line tools
 - pluggable output handlers (stdout and stderr are currently supported)
-- cascading context handling using child loggers
+- cascading context handling using child loggers and tags
 
 ## Installation
 
@@ -29,7 +29,7 @@ For a more detailed explanation read Dave Cheney's post linked above.
 go get github.com/flowpl/log
 ```
 
-or
+or using glide
 
 ```bash
 glide get github.com/flowpl/log
