@@ -10,7 +10,7 @@ const LEVEL_INFO  = "INFO"
 
 type Config struct {
 	Level string
-	Formatter func(level string, message string, tags map[string]string) string
+	Formatter func(level string, message string, tags map[string]string, dateFormat string) string
 	Output func(formattedMessage string)
 	Program string
 	DateFormat string
@@ -26,12 +26,12 @@ func (err LogFormattingFailed) String() string {
 }
 
 func (log Log) Info(message string, tags interface{}) {
-	log.config.Output(log.config.Formatter(LEVEL_INFO, message, mergeTags(log.config.Tags, tags)))
+	log.config.Output(log.config.Formatter(LEVEL_INFO, message, mergeTags(log.config.Tags, tags), log.config.DateFormat))
 }
 
 func (log Log) Debug(message string, tags interface{}) {
 	if log.config.Level == LEVEL_DEBUG {
-		log.config.Output(log.config.Formatter(LEVEL_DEBUG, message, mergeTags(log.config.Tags, tags)))
+		log.config.Output(log.config.Formatter(LEVEL_DEBUG, message, mergeTags(log.config.Tags, tags), log.config.DateFormat))
 	}
 }
 
@@ -69,7 +69,7 @@ func mergeTags(tags map[string]string, additionalTags interface{}) map[string]st
 	reflectedValue := reflect.ValueOf(&additionalTags).Elem()
 	if reflectedValue.Kind() == reflect.Map {
 		for _, name := range reflectedValue.MapKeys() {
-			outputTags[name] = reflectedValue.MapIndex(name).String()
+			outputTags[name.String()] = reflectedValue.MapIndex(name).String()
 		}
 	} else if reflectedValue.Kind() == reflect.Struct {
 		for i := 0; i < reflectedContext.NumField(); i++ {
