@@ -28,6 +28,7 @@ func TextFormatter(level string, message string, tags map[string]string, dateFor
 		message,
 	)
 
+	outputMessage = outputMessage + "\t"
 	for name, value := range tags {
 		if name != "function" {
 			outputMessage += fmt.Sprintf("%s:%s,", name, value)
