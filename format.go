@@ -30,8 +30,8 @@ func TextFormatter(level string, message string, tags map[string]string, dateFor
 	)
 
 	outputMessage = outputMessage + "\t"
-	keys := make([]string, 0, len(tags))
-	for key := range tags {
+	keys := make([]string, len(tags))
+	for key, _ := range tags {
 		keys = append(keys, key)
 	}
 	sort.Strings(keys)
