@@ -36,8 +36,8 @@ func TextFormatter(level string, message string, tags map[string]string, dateFor
 	}
 	sort.Strings(keys)
 
-	for key := range keys {
-		if key != "function" {
+	for _, key := range keys {
+		if key != "function" && len(key) > 0 {
 			outputMessage += fmt.Sprintf("%s:%s,", key, tags[key])
 		}
 	}
