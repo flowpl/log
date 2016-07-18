@@ -76,8 +76,12 @@ func mergeTags(tags map[string]string, context interface{}) map[string]string {
 	}
 
 	reflectedValue := reflect.ValueOf(context)
-	if reflectedValue.Kind() == reflect.Ptr {
-		reflectedValue = reflectedValue.Elem()
+	for {
+		if reflectedValue.Kind() == reflect.Ptr {
+			reflectedValue = reflectedValue.Elem()
+		} else {
+			break
+		}
 	}
 
 	if reflectedValue.Kind() == reflect.Map {
@@ -86,6 +90,14 @@ func mergeTags(tags map[string]string, context interface{}) map[string]string {
 		}
 	} else if reflectedValue.Kind() == reflect.Struct {
 		reflectedContext := reflect.TypeOf(context)
+		for {
+			if reflectedContext.Kind() == reflect.Ptr {
+				reflectedContext = reflectedContext.Elem()
+			} else {
+				break
+			}
+		}
+
 		for i := 0; i < reflectedContext.NumField(); i++ {
 			currentField := reflectedContext.Field(i)
 			outputTags[currentField.Name] = reflectedValue.FieldByName(currentField.Name).String()
