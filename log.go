@@ -2,6 +2,7 @@ package log
 
 import (
 	"reflect"
+	"fmt"
 )
 
 const TIME_FORMAT = "2006-01-02T15:04:05.000000"
@@ -59,23 +60,38 @@ func NewLogger(config *Config) *Log {
 	return logger
 }
 
-func mergeTags(tags map[string]string, additionalTags interface{}) map[string]string {
+func mergeTags(tags map[string]string, context interface{}) map[string]string {
 	outputTags := map[string]string{}
 	for name, value := range tags {
 		outputTags[name] = value
 	}
 
-	reflectedValue := reflect.ValueOf(additionalTags)
+	switch aTags := context.(type) {
+	case error:
+		outputTags["error"] = aTags.Error()
+		return outputTags
+	case fmt.Stringer:
+		outputTags["context"] = aTags.String()
+		return outputTags
+	}
+
+	reflectedValue := reflect.ValueOf(context)
+	if reflectedValue.Kind() == reflect.Ptr {
+		reflectedValue = reflectedValue.Elem()
+	}
+
 	if reflectedValue.Kind() == reflect.Map {
 		for _, name := range reflectedValue.MapKeys() {
 			outputTags[name.String()] = reflectedValue.MapIndex(name).String()
 		}
 	} else if reflectedValue.Kind() == reflect.Struct {
-		reflectedContext := reflect.TypeOf(additionalTags)
+		reflectedContext := reflect.TypeOf(context)
 		for i := 0; i < reflectedContext.NumField(); i++ {
 			currentField := reflectedContext.Field(i)
 			outputTags[currentField.Name] = reflectedValue.FieldByName(currentField.Name).String()
 		}
+	} else {
+		panic("invalid type for additionalTags. Must be map, struct, ptr(map) or ptr(struct)")
 	}
 
 	return outputTags

@@ -19,7 +19,8 @@ For a more detailed explanation, read Dave Cheney's post linked above.
 ## Features
 - simplified log levels that are easy to reason about
 - pluggable output formatters (plain text and JSON are currently supported)
-- the plain text formatter outputs lines that can easily be processed with standard command line tools
+  - the plain text formatter outputs lines that can easily be processed with standard command line tools
+  - use the error and fmt.Stringer interfaces to serialize context tag objects
 - pluggable output handlers (stdout and stderr are currently supported)
 - cascading context handling using child loggers and tags
 
