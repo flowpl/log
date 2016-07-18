@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 	"strings"
+	"sort"
 )
 
 func JsonFormatter(level string, message string, tags map[string]string, dateFormat string) string {
@@ -29,9 +30,15 @@ func TextFormatter(level string, message string, tags map[string]string, dateFor
 	)
 
 	outputMessage = outputMessage + "\t"
-	for name, value := range tags {
-		if name != "function" {
-			outputMessage += fmt.Sprintf("%s:%s,", name, value)
+	keys := make([]string, 0, len(tags))
+	for key := range tags {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+
+	for key := range keys {
+		if key != "function" {
+			outputMessage += fmt.Sprintf("%s:%s,", key, tags[key])
 		}
 	}
 	return strings.Trim(outputMessage, ",")
