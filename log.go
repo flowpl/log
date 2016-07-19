@@ -36,7 +36,7 @@ func (log Log) Debug(message string, tags interface{}) {
 	}
 }
 
-func (log Log) ChildLogger(function string, additionalTags map[string]string) *Log {
+func (log Log) ChildLogger(function string, context map[string]string) *Log {
 	childConfig := new(Config)
 	childConfig.Level = log.config.Level
 	childConfig.Formatter = log.config.Formatter
@@ -45,8 +45,11 @@ func (log Log) ChildLogger(function string, additionalTags map[string]string) *L
 	childConfig.Program = log.config.Program
 	childConfig.Tags = log.config.Tags
 	childConfig.Tags["function"] = function
-	for name, value := range additionalTags {
-		childConfig.Tags[name] = value
+
+	if context != nil {
+		for name, value := range context {
+			childConfig.Tags[name] = value
+		}
 	}
 	return NewLogger(childConfig)
 
@@ -64,6 +67,10 @@ func mergeTags(tags map[string]string, context interface{}) map[string]string {
 	outputTags := map[string]string{}
 	for name, value := range tags {
 		outputTags[name] = value
+	}
+
+	if context == nil {
+		return outputTags
 	}
 
 	switch aTags := context.(type) {
@@ -103,7 +110,7 @@ func mergeTags(tags map[string]string, context interface{}) map[string]string {
 			outputTags[currentField.Name] = reflectedValue.FieldByName(currentField.Name).String()
 		}
 	} else {
-		panic("invalid type for additionalTags. Must be map, struct, ptr(map) or ptr(struct)")
+		panic("invalid type for context. Must be map, struct, ptr(map) or ptr(struct)")
 	}
 
 	return outputTags
