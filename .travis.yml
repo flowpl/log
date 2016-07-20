@@ -8,4 +8,4 @@ install:
   - go get github.com/mattn/goveralls
 
 script:
-  - cd $GOPATH/src/github.com/flowpl/log && goveralls -repotoken $COVERALLS_REPO_TOKEN
+  - cd $GOPATH/src/github.com/flowpl/log && goveralls -service=travis-ci -repotoken $COVERALLS_REPO_TOKEN
