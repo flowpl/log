@@ -1,5 +1,8 @@
 # log
 
+[![travis build](https://travis-ci.org/flowpl/log.svg)](https://travis-ci.org/flowpl/log)
+[![Coverage Status](https://coveralls.io/repos/github/flowpl/log/badge.svg?branch=master)](https://coveralls.io/github/flowpl/log?branch=master)
+
 A minimal logging library for the go language, inspired by this blog post:
 http://dave.cheney.net/2015/11/05/lets-talk-about-logging
 
