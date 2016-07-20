@@ -36,7 +36,7 @@ func (log Log) Debug(message string, tags interface{}) {
 	}
 }
 
-func (log Log) ChildLogger(function string, context map[string]string) *Log {
+func (log Log) ChildLogger(function string, context interface{}) *Log {
 	childConfig := new(Config)
 	childConfig.Level = log.config.Level
 	childConfig.Formatter = log.config.Formatter
@@ -45,17 +45,15 @@ func (log Log) ChildLogger(function string, context map[string]string) *Log {
 	childConfig.Program = log.config.Program
 	childConfig.Tags = log.config.Tags
 	childConfig.Tags["function"] = function
-
-	if context != nil {
-		for name, value := range context {
-			childConfig.Tags[name] = value
-		}
-	}
+	childConfig.Tags = mergeTags(log.config.Tags, context)
 	return NewLogger(childConfig)
 
 }
 
 func NewLogger(config *Config) *Log {
+	if config.Tags == nil {
+		config.Tags = map[string]string{}
+	}
 	config.Tags["program"] = config.Program
 	config.Tags["function"] = "main"
 	logger := new(Log)
@@ -107,7 +105,9 @@ func mergeTags(tags map[string]string, context interface{}) map[string]string {
 
 		for i := 0; i < reflectedContext.NumField(); i++ {
 			currentField := reflectedContext.Field(i)
-			outputTags[currentField.Name] = reflectedValue.FieldByName(currentField.Name).String()
+			if currentField.PkgPath == "" {  // merge only exported fields
+				outputTags[currentField.Name] = reflectedValue.FieldByName(currentField.Name).String()
+			}
 		}
 	} else {
 		panic("invalid type for context. Must be map, struct, ptr(map) or ptr(struct)")
