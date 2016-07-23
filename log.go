@@ -26,17 +26,32 @@ func (err LogFormattingFailed) String() string {
 	return "LogFormattingFailed"
 }
 
-func (log Log) Info(message string, tags interface{}) {
-	log.config.Output(log.config.Formatter(LEVEL_INFO, message, mergeTags(log.config.Tags, tags), log.config.DateFormat))
+type InvalidContext string
+func (err InvalidContext) Error() string {
+	return "invalid type for context. Must be map, struct, ptr(map) or ptr(struct)"
 }
 
-func (log Log) Debug(message string, tags interface{}) {
-	if log.config.Level == LEVEL_DEBUG {
-		log.config.Output(log.config.Formatter(LEVEL_DEBUG, message, mergeTags(log.config.Tags, tags), log.config.DateFormat))
+func (log Log) Info(message string, tags interface{}) error {
+	mergedTags, err := mergeTags(log.config.Tags, tags)
+	if err != nil {
+		return err
 	}
+	log.config.Output(log.config.Formatter(LEVEL_INFO, message, mergedTags, log.config.DateFormat))
+	return nil
 }
 
-func (log Log) ChildLogger(function string, context interface{}) *Log {
+func (log Log) Debug(message string, tags interface{}) error {
+	if log.config.Level == LEVEL_DEBUG {
+		mergedTags, err := mergeTags(log.config.Tags, tags)
+		if err != nil {
+			return err
+		}
+		log.config.Output(log.config.Formatter(LEVEL_DEBUG, message, mergedTags, log.config.DateFormat))
+	}
+	return nil
+}
+
+func (log Log) ChildLogger(function string, context interface{}) (*Log, error) {
 	childConfig := new(Config)
 	childConfig.Level = log.config.Level
 	childConfig.Formatter = log.config.Formatter
@@ -45,8 +60,12 @@ func (log Log) ChildLogger(function string, context interface{}) *Log {
 	childConfig.Program = log.config.Program
 	childConfig.Tags = log.config.Tags
 	childConfig.Tags["function"] = function
-	childConfig.Tags = mergeTags(log.config.Tags, context)
-	return NewLogger(childConfig)
+	mergedTags, err := mergeTags(log.config.Tags, context)
+	if err != nil {
+		return nil, err
+	}
+	childConfig.Tags = mergedTags
+	return NewLogger(childConfig), nil
 
 }
 
@@ -61,23 +80,23 @@ func NewLogger(config *Config) *Log {
 	return logger
 }
 
-func mergeTags(tags map[string]string, context interface{}) map[string]string {
+func mergeTags(tags map[string]string, context interface{}) (map[string]string, error) {
 	outputTags := map[string]string{}
 	for name, value := range tags {
 		outputTags[name] = value
 	}
 
 	if context == nil {
-		return outputTags
+		return outputTags, nil
 	}
 
 	switch aTags := context.(type) {
 	case error:
 		outputTags["error"] = aTags.Error()
-		return outputTags
+		return outputTags, nil
 	case fmt.Stringer:
 		outputTags["context"] = aTags.String()
-		return outputTags
+		return outputTags, nil
 	}
 
 	reflectedValue := reflect.ValueOf(context)
@@ -110,8 +129,8 @@ func mergeTags(tags map[string]string, context interface{}) map[string]string {
 			}
 		}
 	} else {
-		panic("invalid type for context. Must be map, struct, ptr(map) or ptr(struct)")
+		return nil, new(InvalidContext)
 	}
 
-	return outputTags
+	return outputTags, nil
 }

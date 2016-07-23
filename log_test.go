@@ -1,6 +1,8 @@
 package log
 
-import "testing"
+import (
+	"testing"
+)
 
 const FORMATTED_MESSAGE = "message returned from dummyFormatter"
 
@@ -134,6 +136,24 @@ func TestLog_InfoShouldOutputMessagesIfLevelIsInfo(t *testing.T) {
 	}
 }
 
+func TestLog_InfoShouldReturnInvalidContext(t *testing.T) {
+	dfo := new(DummyFormatOutput)
+	config := &Config{
+		LEVEL_INFO,
+		dfo.createDummyFormatter(),
+		dfo.createDummyOutput(),
+		"log_test",
+		"2006",
+		nil,
+	}
+	result := NewLogger(config)
+	err := result.Info("message", "")
+
+	if _, ok := err.(*InvalidContext); !ok {
+		t.Errorf("expected InvalidContext error")
+	}
+}
+
 func TestLog_DebugShouldOutputMessagesIfLevelIsDebug(t *testing.T) {
 	dfo := new(DummyFormatOutput)
 	config := &Config{
@@ -178,6 +198,24 @@ func TestLog_DebugShouldNotOutputMessagesIfLevelIsInfo(t *testing.T) {
 	}
 }
 
+func TestLog_DebugShouldReturnInvalidContext(t *testing.T) {
+	dfo := new(DummyFormatOutput)
+	config := &Config{
+		LEVEL_DEBUG,
+		dfo.createDummyFormatter(),
+		dfo.createDummyOutput(),
+		"log_test",
+		"2006",
+		nil,
+	}
+	result := NewLogger(config)
+	err := result.Debug("message", "")
+
+	if _, ok := err.(*InvalidContext); !ok {
+		t.Errorf("expected InvalidContext error")
+	}
+}
+
 func TestLog_ChildLoggerShouldCreateANewLoggerInstance(t *testing.T) {
 	dfo := new(DummyFormatOutput)
 	config := &Config{
@@ -189,7 +227,7 @@ func TestLog_ChildLoggerShouldCreateANewLoggerInstance(t *testing.T) {
 		nil,
 	}
 	parentLogger := NewLogger(config)
-	result := parentLogger.ChildLogger("child_test", map[string]string{})
+	result, _ := parentLogger.ChildLogger("child_test", map[string]string{})
 
 	result.Info("message", map[string]string{})
 	if parentLogger == result {
@@ -208,7 +246,7 @@ func TestLog_ChildLoggerShouldMergeItsContextWithParentLoggersTags(t *testing.T)
 		nil,
 	}
 	parentLogger := NewLogger(config)
-	result := parentLogger.ChildLogger("child_test", map[string]string{"child_tag":"value"})
+	result, _ := parentLogger.ChildLogger("child_test", map[string]string{"child_tag":"value"})
 
 	result.Info("message", map[string]string{})
 	if len(dfo.tags) != 3 {
@@ -231,7 +269,7 @@ func TestLog_ChildLoggerShouldAllowNilAsContext(t *testing.T) {
 		nil,
 	}
 	parentLogger := NewLogger(config)
-	result := parentLogger.ChildLogger("child_test", nil)
+	result, _ := parentLogger.ChildLogger("child_test", nil)
 
 	result.Info("message", map[string]string{})
 
@@ -255,7 +293,7 @@ func TestLog_ChildLoggerShouldAcceptAnArbitraryStructAsContextAndMergeExportedFi
 		nil,
 	}
 	parentLogger := NewLogger(config)
-	result := parentLogger.ChildLogger("child_test", arbitraryStruct{"exportedValue", "value"})
+	result, _ := parentLogger.ChildLogger("child_test", arbitraryStruct{"exportedValue", "value"})
 
 	result.Info("message", map[string]string{})
 
@@ -278,7 +316,7 @@ func TestLog_ChildLoggerShouldAcceptAPtrToArbitraryStructAsContextAndMergeExport
 		nil,
 	}
 	parentLogger := NewLogger(config)
-	result := parentLogger.ChildLogger("child_test", &arbitraryStruct{"exportedValue", "value"})
+	result, _ := parentLogger.ChildLogger("child_test", &arbitraryStruct{"exportedValue", "value"})
 
 	result.Info("message", map[string]string{})
 
@@ -309,7 +347,7 @@ func TestLog_ChildLoggerShouldUseTheStringerInterfaceOfContextIfPresent(t *testi
 		nil,
 	}
 	parentLogger := NewLogger(config)
-	result := parentLogger.ChildLogger("child_test", arbitraryStringer{"exportedValue", "value"})
+	result, _ := parentLogger.ChildLogger("child_test", arbitraryStringer{"exportedValue", "value"})
 
 	result.Info("message", map[string]string{})
 	if len(dfo.tags) != 3 {
@@ -318,5 +356,89 @@ func TestLog_ChildLoggerShouldUseTheStringerInterfaceOfContextIfPresent(t *testi
 
 	if dfo.tags["context"] != "result from stringer" {
 		t.Errorf("expected tag context to be \"%s\", actual: \"%s\"", "result from stringer", dfo.tags["context"])
+	}
+}
+
+
+type arbitraryError struct {
+	ExportedStructTag string
+	structTag string
+}
+func (as arbitraryError) Error() string {
+	return "result from error"
+}
+func TestLog_ChildLoggerShouldUseTheErrorInterfaceOfContextIfPresent(t *testing.T) {
+	dfo := new(DummyFormatOutput)
+	config := &Config{
+		LEVEL_INFO,
+		dfo.createDummyFormatter(),
+		dfo.createDummyOutput(),
+		"log_test",
+		"2006",
+		nil,
+	}
+	parentLogger := NewLogger(config)
+	result, _ := parentLogger.ChildLogger("child_test", arbitraryError{"exportedValue", "value"})
+
+	result.Info("message", map[string]string{})
+	if len(dfo.tags) != 3 {
+		t.Errorf("expected exactly 3 tags, actual: \"%s\"", len(dfo.tags))
+	}
+
+	if dfo.tags["error"] != "result from error" {
+		t.Errorf("expected tag context to be \"%s\", actual: \"%s\"", "result from error", dfo.tags["error"])
+	}
+}
+
+
+type arbitraryErrorStringer struct {
+	ExportedStructTag string
+	structTag string
+}
+func (as arbitraryErrorStringer) Error() string {
+	return "result from error"
+}
+func (as arbitraryErrorStringer) String() string {
+	return "result from stringer"
+}
+func TestLog_ChildLoggerShouldPreferErrorOverStringer(t *testing.T) {
+	dfo := new(DummyFormatOutput)
+	config := &Config{
+		LEVEL_INFO,
+		dfo.createDummyFormatter(),
+		dfo.createDummyOutput(),
+		"log_test",
+		"2006",
+		nil,
+	}
+	parentLogger := NewLogger(config)
+	result, _ := parentLogger.ChildLogger("child_test", arbitraryErrorStringer{"exportedValue", "value"})
+
+	result.Info("message", map[string]string{})
+	if len(dfo.tags) != 3 {
+		t.Errorf("expected exactly 3 tags, actual: \"%s\"", len(dfo.tags))
+	}
+
+	if dfo.tags["error"] != "result from error" {
+		t.Errorf("expected tag context to be \"%s\", actual: \"%s\"", "result from error", dfo.tags["error"])
+	}
+}
+
+
+func TestLog_ChildLoggerShouldReturnInvalidContextOnInvalidContext(t *testing.T) {
+	dfo := new(DummyFormatOutput)
+	config := &Config{
+		LEVEL_INFO,
+		dfo.createDummyFormatter(),
+		dfo.createDummyOutput(),
+		"log_test",
+		"2006",
+		nil,
+	}
+	parentLogger := NewLogger(config)
+	_, err := parentLogger.ChildLogger("child_test", "")
+
+	if _, ok := err.(*InvalidContext); !ok {
+		t.Errorf("expected InvalidContext error")
 	}
 }
