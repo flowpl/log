@@ -31,7 +31,7 @@ func (err InvalidContext) Error() string {
 type Logger interface {
 	Info(string, interface{}) error
 	Debug(string, interface{}) error
-	ChildLogger(string, interface{}) (*Log, error)
+	ChildLogger(string, interface{}) (Logger, error)
 }
 
 type Log struct {
@@ -57,7 +57,7 @@ func (log Log) Debug(message string, tags interface{}) error {
 	return nil
 }
 
-func (log Log) ChildLogger(function string, context interface{}) (*Log, error) {
+func (log Log) ChildLogger(function string, context interface{}) (Logger, error) {
 	childConfig := new(Config)
 	childConfig.Level = log.config.Level
 	childConfig.Formatter = log.config.Formatter
@@ -75,7 +75,7 @@ func (log Log) ChildLogger(function string, context interface{}) (*Log, error) {
 
 }
 
-func NewLogger(config *Config) *Log {
+func NewLogger(config *Config) Logger {
 	if config.Tags == nil {
 		config.Tags = map[string]string{}
 	}

@@ -1,7 +1,8 @@
-package log
+package log_test
 
 import (
 	"testing"
+	"github.com/flowpl/log"
 )
 
 const FORMATTED_MESSAGE = "message returned from dummyFormatter"
@@ -30,19 +31,19 @@ func (dfo *DummyFormatOutput) createDummyOutput() func(string) {
 
 func TestNewLoggerCreatesANewLogThatUsesGivenConfig(t *testing.T) {
 	dfo := new(DummyFormatOutput)
-	config := &Config{
-		LEVEL_DEBUG,
+	config := &log.Config{
+		log.LEVEL_DEBUG,
 		dfo.createDummyFormatter(),
 		dfo.createDummyOutput(),
 		"log_test",
 		"2006",
 		map[string]string{"tag1":"value1"},
 	}
-	result := NewLogger(config)
+	var result log.Logger = log.NewLogger(config)
 
 	result.Debug("message", map[string]string{})
-	if dfo.level != LEVEL_DEBUG {
-		t.Errorf("expected level to be \"%s\", actual: \"%s\"", LEVEL_DEBUG, dfo.level)
+	if dfo.level != log.LEVEL_DEBUG {
+		t.Errorf("expected level to be \"%s\", actual: \"%s\"", log.LEVEL_DEBUG, dfo.level)
 	}
 
 	if dfo.message != "message" {
@@ -76,15 +77,15 @@ func TestNewLoggerCreatesANewLogThatUsesGivenConfig(t *testing.T) {
 
 func TestNewLoggerShouldAcceptNilAsTagsConfig(t *testing.T) {
 	dfo := new(DummyFormatOutput)
-	config := &Config{
-		LEVEL_DEBUG,
+	config := &log.Config{
+		log.LEVEL_DEBUG,
 		dfo.createDummyFormatter(),
 		dfo.createDummyOutput(),
 		"log_test",
 		"2006",
 		nil,
 	}
-	result := NewLogger(config)
+	result := log.NewLogger(config)
 	result.Debug("message", map[string]string{})
 
 	if len(dfo.tags) != 2 {
@@ -94,15 +95,15 @@ func TestNewLoggerShouldAcceptNilAsTagsConfig(t *testing.T) {
 
 func TestLog_InfoShouldOutputMessagesIfLevelIsDebug(t *testing.T) {
 	dfo := new(DummyFormatOutput)
-	config := &Config{
-		LEVEL_DEBUG,
+	config := &log.Config{
+		log.LEVEL_DEBUG,
 		dfo.createDummyFormatter(),
 		dfo.createDummyOutput(),
 		"log_test",
 		"2006",
 		nil,
 	}
-	result := NewLogger(config)
+	result := log.NewLogger(config)
 	result.Info("message", map[string]string{})
 
 	if dfo.message != "message" {
@@ -116,15 +117,15 @@ func TestLog_InfoShouldOutputMessagesIfLevelIsDebug(t *testing.T) {
 
 func TestLog_InfoShouldOutputMessagesIfLevelIsInfo(t *testing.T) {
 	dfo := new(DummyFormatOutput)
-	config := &Config{
-		LEVEL_INFO,
+	config := &log.Config{
+		log.LEVEL_INFO,
 		dfo.createDummyFormatter(),
 		dfo.createDummyOutput(),
 		"log_test",
 		"2006",
 		nil,
 	}
-	result := NewLogger(config)
+	result := log.NewLogger(config)
 	result.Info("message", map[string]string{})
 
 	if dfo.message != "message" {
@@ -138,33 +139,33 @@ func TestLog_InfoShouldOutputMessagesIfLevelIsInfo(t *testing.T) {
 
 func TestLog_InfoShouldReturnInvalidContext(t *testing.T) {
 	dfo := new(DummyFormatOutput)
-	config := &Config{
-		LEVEL_INFO,
+	config := &log.Config{
+		log.LEVEL_INFO,
 		dfo.createDummyFormatter(),
 		dfo.createDummyOutput(),
 		"log_test",
 		"2006",
 		nil,
 	}
-	result := NewLogger(config)
+	result := log.NewLogger(config)
 	err := result.Info("message", "")
 
-	if _, ok := err.(*InvalidContext); !ok {
-		t.Errorf("expected InvalidContext error")
+	if _, ok := err.(*log.InvalidContext); !ok {
+		t.Error("expected InvalidContext error")
 	}
 }
 
 func TestLog_DebugShouldOutputMessagesIfLevelIsDebug(t *testing.T) {
 	dfo := new(DummyFormatOutput)
-	config := &Config{
-		LEVEL_DEBUG,
+	config := &log.Config{
+		log.LEVEL_DEBUG,
 		dfo.createDummyFormatter(),
 		dfo.createDummyOutput(),
 		"log_test",
 		"2006",
 		nil,
 	}
-	result := NewLogger(config)
+	result := log.NewLogger(config)
 	result.Debug("message", map[string]string{})
 
 	if dfo.message != "message" {
@@ -178,15 +179,15 @@ func TestLog_DebugShouldOutputMessagesIfLevelIsDebug(t *testing.T) {
 
 func TestLog_DebugShouldNotOutputMessagesIfLevelIsInfo(t *testing.T) {
 	dfo := new(DummyFormatOutput)
-	config := &Config{
-		LEVEL_INFO,
+	config := &log.Config{
+		log.LEVEL_INFO,
 		dfo.createDummyFormatter(),
 		dfo.createDummyOutput(),
 		"log_test",
 		"2006",
 		nil,
 	}
-	result := NewLogger(config)
+	result := log.NewLogger(config)
 	result.Debug("message", map[string]string{})
 
 	if dfo.message != "" {
@@ -200,52 +201,52 @@ func TestLog_DebugShouldNotOutputMessagesIfLevelIsInfo(t *testing.T) {
 
 func TestLog_DebugShouldReturnInvalidContext(t *testing.T) {
 	dfo := new(DummyFormatOutput)
-	config := &Config{
-		LEVEL_DEBUG,
+	config := &log.Config{
+		log.LEVEL_DEBUG,
 		dfo.createDummyFormatter(),
 		dfo.createDummyOutput(),
 		"log_test",
 		"2006",
 		nil,
 	}
-	result := NewLogger(config)
+	result := log.NewLogger(config)
 	err := result.Debug("message", "")
 
-	if _, ok := err.(*InvalidContext); !ok {
-		t.Errorf("expected InvalidContext error")
+	if _, ok := err.(*log.InvalidContext); !ok {
+		t.Error("expected InvalidContext error")
 	}
 }
 
 func TestLog_ChildLoggerShouldCreateANewLoggerInstance(t *testing.T) {
 	dfo := new(DummyFormatOutput)
-	config := &Config{
-		LEVEL_INFO,
+	config := &log.Config{
+		log.LEVEL_INFO,
 		dfo.createDummyFormatter(),
 		dfo.createDummyOutput(),
 		"log_test",
 		"2006",
 		nil,
 	}
-	parentLogger := NewLogger(config)
+	parentLogger := log.NewLogger(config)
 	result, _ := parentLogger.ChildLogger("child_test", map[string]string{})
 
 	result.Info("message", map[string]string{})
 	if parentLogger == result {
-		t.Errorf("expected logger and childLogger to be different instances, but they are the same")
+		t.Error("expected logger and childLogger to be different instances, but they are the same")
 	}
 }
 
 func TestLog_ChildLoggerShouldMergeItsContextWithParentLoggersTags(t *testing.T) {
 	dfo := new(DummyFormatOutput)
-	config := &Config{
-		LEVEL_INFO,
+	config := &log.Config{
+		log.LEVEL_INFO,
 		dfo.createDummyFormatter(),
 		dfo.createDummyOutput(),
 		"log_test",
 		"2006",
 		nil,
 	}
-	parentLogger := NewLogger(config)
+	parentLogger := log.NewLogger(config)
 	result, _ := parentLogger.ChildLogger("child_test", map[string]string{"child_tag":"value"})
 
 	result.Info("message", map[string]string{})
@@ -260,15 +261,15 @@ func TestLog_ChildLoggerShouldMergeItsContextWithParentLoggersTags(t *testing.T)
 
 func TestLog_ChildLoggerShouldAllowNilAsContext(t *testing.T) {
 	dfo := new(DummyFormatOutput)
-	config := &Config{
-		LEVEL_INFO,
+	config := &log.Config{
+		log.LEVEL_INFO,
 		dfo.createDummyFormatter(),
 		dfo.createDummyOutput(),
 		"log_test",
 		"2006",
 		nil,
 	}
-	parentLogger := NewLogger(config)
+	parentLogger := log.NewLogger(config)
 	result, _ := parentLogger.ChildLogger("child_test", nil)
 
 	result.Info("message", map[string]string{})
@@ -284,15 +285,15 @@ type arbitraryStruct struct {
 }
 func TestLog_ChildLoggerShouldAcceptAnArbitraryStructAsContextAndMergeExportedFieldsIntoTags(t *testing.T) {
 	dfo := new(DummyFormatOutput)
-	config := &Config{
-		LEVEL_INFO,
+	config := &log.Config{
+		log.LEVEL_INFO,
 		dfo.createDummyFormatter(),
 		dfo.createDummyOutput(),
 		"log_test",
 		"2006",
 		nil,
 	}
-	parentLogger := NewLogger(config)
+	parentLogger := log.NewLogger(config)
 	result, _ := parentLogger.ChildLogger("child_test", arbitraryStruct{"exportedValue", "value"})
 
 	result.Info("message", map[string]string{})
@@ -307,15 +308,15 @@ func TestLog_ChildLoggerShouldAcceptAnArbitraryStructAsContextAndMergeExportedFi
 
 func TestLog_ChildLoggerShouldAcceptAPtrToArbitraryStructAsContextAndMergeExportedFieldsIntoTags(t *testing.T) {
 	dfo := new(DummyFormatOutput)
-	config := &Config{
-		LEVEL_INFO,
+	config := &log.Config{
+		log.LEVEL_INFO,
 		dfo.createDummyFormatter(),
 		dfo.createDummyOutput(),
 		"log_test",
 		"2006",
 		nil,
 	}
-	parentLogger := NewLogger(config)
+	parentLogger := log.NewLogger(config)
 	result, _ := parentLogger.ChildLogger("child_test", &arbitraryStruct{"exportedValue", "value"})
 
 	result.Info("message", map[string]string{})
@@ -338,15 +339,15 @@ func (as arbitraryStringer) String() string {
 }
 func TestLog_ChildLoggerShouldUseTheStringerInterfaceOfContextIfPresent(t *testing.T) {
 	dfo := new(DummyFormatOutput)
-	config := &Config{
-		LEVEL_INFO,
+	config := &log.Config{
+		log.LEVEL_INFO,
 		dfo.createDummyFormatter(),
 		dfo.createDummyOutput(),
 		"log_test",
 		"2006",
 		nil,
 	}
-	parentLogger := NewLogger(config)
+	parentLogger := log.NewLogger(config)
 	result, _ := parentLogger.ChildLogger("child_test", arbitraryStringer{"exportedValue", "value"})
 
 	result.Info("message", map[string]string{})
@@ -369,15 +370,15 @@ func (as arbitraryError) Error() string {
 }
 func TestLog_ChildLoggerShouldUseTheErrorInterfaceOfContextIfPresent(t *testing.T) {
 	dfo := new(DummyFormatOutput)
-	config := &Config{
-		LEVEL_INFO,
+	config := &log.Config{
+		log.LEVEL_INFO,
 		dfo.createDummyFormatter(),
 		dfo.createDummyOutput(),
 		"log_test",
 		"2006",
 		nil,
 	}
-	parentLogger := NewLogger(config)
+	parentLogger := log.NewLogger(config)
 	result, _ := parentLogger.ChildLogger("child_test", arbitraryError{"exportedValue", "value"})
 
 	result.Info("message", map[string]string{})
@@ -403,15 +404,15 @@ func (as arbitraryErrorStringer) String() string {
 }
 func TestLog_ChildLoggerShouldPreferErrorOverStringer(t *testing.T) {
 	dfo := new(DummyFormatOutput)
-	config := &Config{
-		LEVEL_INFO,
+	config := &log.Config{
+		log.LEVEL_INFO,
 		dfo.createDummyFormatter(),
 		dfo.createDummyOutput(),
 		"log_test",
 		"2006",
 		nil,
 	}
-	parentLogger := NewLogger(config)
+	parentLogger := log.NewLogger(config)
 	result, _ := parentLogger.ChildLogger("child_test", arbitraryErrorStringer{"exportedValue", "value"})
 
 	result.Info("message", map[string]string{})
@@ -427,18 +428,18 @@ func TestLog_ChildLoggerShouldPreferErrorOverStringer(t *testing.T) {
 
 func TestLog_ChildLoggerShouldReturnInvalidContextOnInvalidContext(t *testing.T) {
 	dfo := new(DummyFormatOutput)
-	config := &Config{
-		LEVEL_INFO,
+	config := &log.Config{
+		log.LEVEL_INFO,
 		dfo.createDummyFormatter(),
 		dfo.createDummyOutput(),
 		"log_test",
 		"2006",
 		nil,
 	}
-	parentLogger := NewLogger(config)
+	parentLogger := log.NewLogger(config)
 	_, err := parentLogger.ChildLogger("child_test", "")
 
-	if _, ok := err.(*InvalidContext); !ok {
-		t.Errorf("expected InvalidContext error")
+	if _, ok := err.(*log.InvalidContext); !ok {
+		t.Error("expected InvalidContext error")
 	}
 }
