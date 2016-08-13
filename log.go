@@ -37,7 +37,7 @@ type Logger interface {
 type Log struct {
 	config *Config
 }
-func (log Log) Info(message string, tags interface{}) error {
+func (log *Log) Info(message string, tags interface{}) error {
 	mergedTags, err := mergeTags(log.config.Tags, tags)
 	if err != nil {
 		return err
@@ -46,7 +46,7 @@ func (log Log) Info(message string, tags interface{}) error {
 	return nil
 }
 
-func (log Log) Debug(message string, tags interface{}) error {
+func (log *Log) Debug(message string, tags interface{}) error {
 	if log.config.Level == LEVEL_DEBUG {
 		mergedTags, err := mergeTags(log.config.Tags, tags)
 		if err != nil {
@@ -57,7 +57,7 @@ func (log Log) Debug(message string, tags interface{}) error {
 	return nil
 }
 
-func (log Log) ChildLogger(function string, context interface{}) (Logger, error) {
+func (log *Log) ChildLogger(function string, context interface{}) (Logger, error) {
 	childConfig := new(Config)
 	childConfig.Level = log.config.Level
 	childConfig.Formatter = log.config.Formatter
