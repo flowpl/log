@@ -18,9 +18,6 @@ type Config struct {
 	Tags map[string]string
 }
 
-type Log struct {
-	config *Config
-}
 type LogFormattingFailed string
 func (err LogFormattingFailed) String() string {
 	return "LogFormattingFailed"
@@ -31,6 +28,15 @@ func (err InvalidContext) Error() string {
 	return "invalid type for context. Must be map, struct, ptr(map) or ptr(struct)"
 }
 
+type Logger interface {
+	Info(string, interface{}) error
+	Debug(string, interface{}) error
+	ChildLogger(string, interface{}) (*Log, error)
+}
+
+type Log struct {
+	config *Config
+}
 func (log Log) Info(message string, tags interface{}) error {
 	mergedTags, err := mergeTags(log.config.Tags, tags)
 	if err != nil {
