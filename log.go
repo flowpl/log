@@ -13,7 +13,8 @@ type Config struct {
 	Level string
 	Formatter func(level string, message string, tags map[string]string, dateFormat string) string
 	Output func(formattedMessage string)
-	Program string
+	ProgramName string
+	FunctionName string
 	DateFormat string
 	Tags map[string]string
 }
@@ -57,30 +58,32 @@ func (log Log) Debug(message string, tags interface{}) error {
 	return nil
 }
 
-func (log Log) ChildLogger(function string, context interface{}) (Logger, error) {
+func (log Log) ChildLogger(functionName string, context interface{}) (Logger, error) {
 	childConfig := new(Config)
 	childConfig.Level = log.config.Level
 	childConfig.Formatter = log.config.Formatter
 	childConfig.Output = log.config.Output
 	childConfig.DateFormat = log.config.DateFormat
-	childConfig.Program = log.config.Program
-	childConfig.Tags = log.config.Tags
-	childConfig.Tags["function"] = function
-	mergedTags, err := mergeTags(log.config.Tags, context)
+	childConfig.ProgramName = log.config.ProgramName
+	childConfig.Tags = make(map[string]string, len(log.config.Tags))
+	for k, v := range log.config.Tags {
+		childConfig.Tags[k] = v
+	}
+	childConfig.FunctionName = functionName
+	mergedTags, err := mergeTags(childConfig.Tags, context)
 	if err != nil {
 		return nil, err
 	}
 	childConfig.Tags = mergedTags
 	return NewLogger(childConfig), nil
-
 }
 
 func NewLogger(config *Config) Logger {
 	if config.Tags == nil {
 		config.Tags = map[string]string{}
 	}
-	config.Tags["program"] = config.Program
-	config.Tags["function"] = "main"
+	config.Tags["program"] = config.ProgramName
+	config.Tags["function"] = config.FunctionName
 	logger := new(Log)
 	logger.config = config
 	return logger

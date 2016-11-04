@@ -1,8 +1,6 @@
 package fakes
 
 import (
-	"math"
-	"io"
 	"github.com/flowpl/log"
 )
 

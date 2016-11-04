@@ -36,6 +36,7 @@ func TestNewLoggerCreatesANewLogThatUsesGivenConfig(t *testing.T) {
 		dfo.createDummyFormatter(),
 		dfo.createDummyOutput(),
 		"log_test",
+		"main",
 		"2006",
 		map[string]string{"tag1":"value1"},
 	}
@@ -82,6 +83,7 @@ func TestNewLoggerShouldAcceptNilAsTagsConfig(t *testing.T) {
 		dfo.createDummyFormatter(),
 		dfo.createDummyOutput(),
 		"log_test",
+		"main",
 		"2006",
 		nil,
 	}
@@ -100,6 +102,7 @@ func TestLog_InfoShouldOutputMessagesIfLevelIsDebug(t *testing.T) {
 		dfo.createDummyFormatter(),
 		dfo.createDummyOutput(),
 		"log_test",
+		"main",
 		"2006",
 		nil,
 	}
@@ -122,6 +125,7 @@ func TestLog_InfoShouldOutputMessagesIfLevelIsInfo(t *testing.T) {
 		dfo.createDummyFormatter(),
 		dfo.createDummyOutput(),
 		"log_test",
+		"main",
 		"2006",
 		nil,
 	}
@@ -144,6 +148,7 @@ func TestLog_InfoShouldReturnInvalidContext(t *testing.T) {
 		dfo.createDummyFormatter(),
 		dfo.createDummyOutput(),
 		"log_test",
+		"main",
 		"2006",
 		nil,
 	}
@@ -162,6 +167,7 @@ func TestLog_DebugShouldOutputMessagesIfLevelIsDebug(t *testing.T) {
 		dfo.createDummyFormatter(),
 		dfo.createDummyOutput(),
 		"log_test",
+		"main",
 		"2006",
 		nil,
 	}
@@ -184,6 +190,7 @@ func TestLog_DebugShouldNotOutputMessagesIfLevelIsInfo(t *testing.T) {
 		dfo.createDummyFormatter(),
 		dfo.createDummyOutput(),
 		"log_test",
+		"main",
 		"2006",
 		nil,
 	}
@@ -206,6 +213,7 @@ func TestLog_DebugShouldReturnInvalidContext(t *testing.T) {
 		dfo.createDummyFormatter(),
 		dfo.createDummyOutput(),
 		"log_test",
+		"main",
 		"2006",
 		nil,
 	}
@@ -224,6 +232,7 @@ func TestLog_ChildLoggerShouldCreateANewLoggerInstance(t *testing.T) {
 		dfo.createDummyFormatter(),
 		dfo.createDummyOutput(),
 		"log_test",
+		"main",
 		"2006",
 		nil,
 	}
@@ -243,6 +252,7 @@ func TestLog_ChildLoggerShouldMergeItsContextWithParentLoggersTags(t *testing.T)
 		dfo.createDummyFormatter(),
 		dfo.createDummyOutput(),
 		"log_test",
+		"main",
 		"2006",
 		nil,
 	}
@@ -259,6 +269,30 @@ func TestLog_ChildLoggerShouldMergeItsContextWithParentLoggersTags(t *testing.T)
 	}
 }
 
+func TestLog_ChildLoggerShouldSetFunctionNameOnTheChildLoggerButLeaveTheParentTagsUnchanged(t *testing.T) {
+	dfo := new(DummyFormatOutput)
+	config := &log.Config{
+		log.LEVEL_INFO,
+		dfo.createDummyFormatter(),
+		dfo.createDummyOutput(),
+		"log_test",
+		"main",
+		"2006",
+		nil,
+	}
+	parentLogger := log.NewLogger(config)
+	result, _ := parentLogger.ChildLogger("child_test", map[string]string{})
+
+	result.Info("child", map[string]string{})
+	if dfo.tags["function"] != "child_test" {
+		t.Errorf("expected child logger function tag to be \"child_test\", actual: \"%s\"", dfo.tags["function"])
+	}
+	parentLogger.Info("parent", map[string]string{})
+	if dfo.tags["function"] != "main" {
+		t.Errorf("expected parent logger function tag to be \"main\", actual: \"%s\"", dfo.tags["function"])
+	}
+}
+
 func TestLog_ChildLoggerShouldAllowNilAsContext(t *testing.T) {
 	dfo := new(DummyFormatOutput)
 	config := &log.Config{
@@ -266,6 +300,7 @@ func TestLog_ChildLoggerShouldAllowNilAsContext(t *testing.T) {
 		dfo.createDummyFormatter(),
 		dfo.createDummyOutput(),
 		"log_test",
+		"main",
 		"2006",
 		nil,
 	}
@@ -290,6 +325,7 @@ func TestLog_ChildLoggerShouldAcceptAnArbitraryStructAsContextAndMergeExportedFi
 		dfo.createDummyFormatter(),
 		dfo.createDummyOutput(),
 		"log_test",
+		"main",
 		"2006",
 		nil,
 	}
@@ -313,6 +349,7 @@ func TestLog_ChildLoggerShouldAcceptAPtrToArbitraryStructAsContextAndMergeExport
 		dfo.createDummyFormatter(),
 		dfo.createDummyOutput(),
 		"log_test",
+		"main",
 		"2006",
 		nil,
 	}
@@ -344,6 +381,7 @@ func TestLog_ChildLoggerShouldUseTheStringerInterfaceOfContextIfPresent(t *testi
 		dfo.createDummyFormatter(),
 		dfo.createDummyOutput(),
 		"log_test",
+		"main",
 		"2006",
 		nil,
 	}
@@ -375,6 +413,7 @@ func TestLog_ChildLoggerShouldUseTheErrorInterfaceOfContextIfPresent(t *testing.
 		dfo.createDummyFormatter(),
 		dfo.createDummyOutput(),
 		"log_test",
+		"main",
 		"2006",
 		nil,
 	}
@@ -409,6 +448,7 @@ func TestLog_ChildLoggerShouldPreferErrorOverStringer(t *testing.T) {
 		dfo.createDummyFormatter(),
 		dfo.createDummyOutput(),
 		"log_test",
+		"main",
 		"2006",
 		nil,
 	}
@@ -433,6 +473,7 @@ func TestLog_ChildLoggerShouldReturnInvalidContextOnInvalidContext(t *testing.T)
 		dfo.createDummyFormatter(),
 		dfo.createDummyOutput(),
 		"log_test",
+		"main",
 		"2006",
 		nil,
 	}
